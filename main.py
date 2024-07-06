@@ -8,16 +8,30 @@ screen.addshape(image)
 
 turtle.shape(image)
 
-correct = 0
+data = pandas.read_csv('50_states.csv')
+guessed_states = []
+all_states = data['state'].to_list()
 
-while correct < 50:
-    answer_state = screen.textinput(title=f'{correct}/50 States Correct', prompt="What's another state's name?").title()
+while len(guessed_states) < 50:
+    answer_state = screen.textinput(title=f'{len(guessed_states)}/50 States Correct', prompt="What's another state's name?").title()
 
-    data = pandas.read_csv('50_states.csv')
+    if answer_state == 'Exit':
+        missing_states = []
+        for state in all_states:
+            if state not in guessed_states:
+                missing_states.append(state)
+        df = pandas.DataFrame(missing_states)
+        df.to_csv('states_to_learn.csv')
+        
+        break
+
+    
     if data['state'].isin([answer_state]).any():
-        answer = data[data['state'] == answer_state]
-        x_coor = int(answer['x'])
-        y_coor = int(answer['y'])
+        state_data = data[data['state'] == answer_state]
+        guessed_states.append(answer_state)
+        
+        x_coor = int(state_data['x'])
+        y_coor = int(state_data['y'])
         print(f'{x_coor}, {y_coor}')
 
         state = turtle.Turtle()
@@ -25,15 +39,13 @@ while correct < 50:
         state.hideturtle()
         state.goto(x_coor, y_coor)
         state.write(answer_state)
-        correct += 1
     else:
         pass
 
-state.goto(0, 0)
-state.write('You win!')
 
-# turtle.mainloop()
+if len(guessed_states) == 50:
+    state.goto(0, 0)
+    state.write('You win!')
 
-
-
+  
 screen.exitonclick()
